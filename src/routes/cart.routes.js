@@ -23,12 +23,15 @@ export default class cartRoutes {
         this.router.delete(`${this.path}/:cid/products/:pid`, this.cartController.deleteProductCartController);
 
         //delete all products from cart
-        this.router.delete(`${this.path}/:cid`, this.cartController.deleteProductsCartController);
+        this.router.delete(`${this.path}/:cid/products`, this.cartController.deleteProductsCartController);
 
         //update quantity product from cart
         this.router.put(`${this.path}/:cid/products/:pid`, this.cartController.updateProductCartController);
 
         //purchase products from cart
-        this.router.get(`${this.path}/:cid/purchase`, handlePolicies(["user", "premium"]), this.cartController.purchaseCartController); 
+        this.router.get(`${this.path}/:cid/purchase`, handlePolicies(["user", "premium"]), this.cartController.purchaseCartController);
+        
+        //delete cart by Id
+        this.router.delete(`${this.path}/:cid`, this.cartController.deleteCartByIdController);
     }
 }

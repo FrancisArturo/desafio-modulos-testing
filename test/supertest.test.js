@@ -1,5 +1,6 @@
 import supertest from "supertest";
 import { expect } from "chai";
+import { beforeEach } from "mocha";
 
 
 const BASE_API_URL = "http://localhost:5000"
@@ -13,7 +14,9 @@ describe("functional test for all endpoints", () => {
     let cookie;
     let products;
     let productIdMock;
+    let productCartIdMock;
     let cartIdMock;
+    let userIdMock;
     describe("Products endpoints", () =>{
         beforeEach(() =>{
             requester = supertest(`${BASE_API_URL}`);
@@ -40,27 +43,13 @@ describe("functional test for all endpoints", () => {
                 thumbnail: ""
             };
             const { statusCode, ok, _body } = await requester.post(`${PRODUCTS_ROUTE}`).send(bodyProduct);
+            productIdMock = _body.data._id;
             expect(statusCode).to.eq(200);
             expect(ok).to.be.ok;
             expect(_body.message).to.eq("Product added successfully");
             expect(_body.data).to.have.property("_id");
         });
         it("should DELETE /api/v1/products/:pid delete a product successfully with code 200", async () => {
-            const bodyProduct = {
-                title: "Torta de naranja",
-                description: "Torta de naranja",
-                code: "TNA-ARG-553",
-                price: 1200,
-                status: true,
-                stock: 200,
-                category: "panificados",
-                thumbnail: ""
-            };
-            const { _body: newProductBody } = await requester.post(`${PRODUCTS_ROUTE}`).send(bodyProduct);
-            expect(newProductBody.message).to.eq("Product added successfully");
-            expect(newProductBody.data).to.have.property("_id");
-            
-            const productIdMock = newProductBody.data._id; 
             const { ok, statusCode, _body  } = await requester.delete(`${PRODUCTS_ROUTE}/${productIdMock}`);
             expect(statusCode).to.eq(200);
             expect(ok).to.be.ok;
@@ -80,6 +69,7 @@ describe("functional test for all endpoints", () => {
                 password: "asdf"
             };
             const { statusCode, ok, _body } = await requester.post(`${SESSION_ROUTE}/register`).send(newUserBody);
+            userIdMock = _body.newUserUpdated._id;
             expect(statusCode).to.eq(200);
             expect(ok).to.be.ok;
             expect(_body.message).to.eq("User added successfully");
@@ -105,33 +95,40 @@ describe("functional test for all endpoints", () => {
         });
     });
     describe("Carts endpoints", () => {
+        beforeEach(() =>{
+            requester = supertest(`${BASE_API_URL}`);
+        });
+        after( async () => {
+            await requester.delete(`${CARTS_ROUTE}/${cartIdMock}`);
+            await requester.delete(`${SESSION_ROUTE}/user/${userIdMock}`);
+        })
         it("should POST /api/v1/carts/:cid/products/:pid add a product to user cart successfully with code 200", async () => {
             const { _body } = await requester.get(`${SESSION_ROUTE}/user`).set("Cookie", [`${cookie.name}=${cookie.value}`]);
             cartIdMock = _body.carts
-            productIdMock = products[0]._id;
+            productCartIdMock = products[0]._id;
             const addProductBody = {
                 quantity: 1
             }
-            const { statusCode, ok, _body: cartBody } = await requester.post(`${CARTS_ROUTE}/${cartIdMock}/products/${productIdMock}`).send(addProductBody);
+            const { statusCode, ok, _body: cartBody } = await requester.post(`${CARTS_ROUTE}/${cartIdMock}/products/${productCartIdMock}`).send(addProductBody);
             expect(statusCode).to.eq(200);
             expect(ok).to.be.ok;
             expect(cartBody.message).to.eq("Product added successfully");
             expect(Array.isArray(cartBody.data)).to.be.true;
             expect(cartBody.data).to.have.length.above(0);
-            expect(cartBody.data[0].product._id).to.be.eql(productIdMock);
+            expect(cartBody.data[0].product._id).to.be.eql(productCartIdMock);
         });
         it("should PUT /api/v1/carts/:cid/products/:pid update the number of products to add to the cart successfully with code 200", async () => {
             const addProductBody = {
                 quantity: 20
             }
-            const { statusCode, ok, _body: cartBody } = await requester.put(`${CARTS_ROUTE}/${cartIdMock}/products/${productIdMock}`).send(addProductBody);
+            const { statusCode, ok, _body: cartBody } = await requester.put(`${CARTS_ROUTE}/${cartIdMock}/products/${productCartIdMock}`).send(addProductBody);
             expect(statusCode).to.eq(200);
             expect(ok).to.be.ok;
             expect(cartBody.message).to.eq("Product quantity updated successfully");
             expect(cartBody.data.products[0].quantity).to.eql(20);
         });
         it("should DELETE /api/v1/carts/:cid/products/:pid delete a product to the cart successfully with code 200", async () => {
-            const { statusCode, ok, _body: cartBody } = await requester.delete(`${CARTS_ROUTE}/${cartIdMock}/products/${productIdMock}`);
+            const { statusCode, ok, _body: cartBody } = await requester.delete(`${CARTS_ROUTE}/${cartIdMock}/products/${productCartIdMock}`);
             expect(statusCode).to.eq(200);
             expect(ok).to.be.ok;
             expect(cartBody.message).to.eq("Product deleted successfully");

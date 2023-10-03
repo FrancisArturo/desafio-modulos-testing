@@ -66,14 +66,6 @@ export default class CartsDao {
             throw new Error(error);
         }
     }
-    // deleteCart = async (id) => {
-    //     const cart = await cartModel.findById(id);
-    //     if (!cart) {
-    //         return "Cart not found";
-    //     }
-    //     await cart.deleteOne();
-    //     return "Cart deleted";
-    // }
     deleteProductsCartDao = async (cid) => {
         try {
             const cart = await cartModel.findById(cid);
@@ -84,6 +76,14 @@ export default class CartsDao {
             throw new Error("delete products cart error");
         }
         
+    }
+    deleteCartByIdDao = async (cid) => {
+        try {
+            const deleteCart = await cartModel.deleteOne({ _id: cid });
+            return deleteCart;
+        } catch (error) {
+            throw new Error(error);
+        }
     }
     updateProductCartDao = async (cid, pid, quantity) => {
         try {

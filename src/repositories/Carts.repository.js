@@ -25,6 +25,10 @@ export default class CartsRepository {
         let result = await this.dao.deleteProductsCartDao(cid);
         return result;
     }
+    deleteCartById = async (cid) => {
+        let result = await this.dao.deleteCartByIdDao(cid);
+        return result;
+    }
     updateProductCart = async (cid, pid, quantity) => {
         let result = await this.dao.updateProductCartDao(cid, pid, quantity);
         return result;

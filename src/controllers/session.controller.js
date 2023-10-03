@@ -23,9 +23,8 @@ export default class SessionController {
             const cartUser = await this.cartsService.addCart();
             const cartUserId = cartUser._id;
             await this.usersService.updateUser(newUser._id, {carts : cartUserId });
-            //const newUserUpdated = await this.usersService.getUserById(newUser._id);
-            //res.status(401).render('login', {error: "Incorrect password"})
-            return res.json({message: "User added successfully"}).render('register', {RegisterSuccessfully: "User added successfully"});
+            const newUserUpdated = await this.usersService.getUserById(newUser._id);
+            return res.json({message: "User added successfully", newUserUpdated}).render('register', {RegisterSuccessfully: "User added successfully"});
         } catch (error) {
             return res.status(400).json({ message: error.message });
         }
@@ -199,7 +198,19 @@ export default class SessionController {
         const currentUser = new UserDTO(user)
         return res.json({message: "Current access information", currentUser});
     }
-
+    deleteUserByIdController = async (req, res) => {
+        try {
+            const { uid } = req.params;
+            const user = await this.usersService.getUserById(uid);
+            if (!user) {
+                return res.json({ message: "user not found" });
+            }
+            const deleteUser = await this.usersService.deleteUserById(uid);
+            return res.json({message: "User delete successfully", deleteUser});
+        } catch (error) {
+            res.status(400).json({ message: error.message });
+        }
+    }
     githubLoginController  = async (req, res) => {
         try {
             const userLogin = req.user;

@@ -77,4 +77,12 @@ export default class UsersDao {
             throw new Error(error);
         }
     }
+    deleteUserByIdDao = async (uid) => {
+        try {
+            const userDelete = await userModel.deleteOne({ _id: uid })
+            return userDelete;
+        } catch (error) {
+            throw new Error(error);
+        }
+    }
 }

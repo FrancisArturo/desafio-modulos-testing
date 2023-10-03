@@ -100,6 +100,21 @@ export default class CartsController {
             res.status(400).json({ message: error.message });
         }
     }
+    deleteCartByIdController = async (req, res) => {
+        try {
+            const { cid } = req.params;
+            const cart = await this.cartsService.getCartById(cid);
+            if (!cart) {
+                return res.json({
+                    message: "Cart does not exist",
+                })
+            };
+            const deleteCart = await this.cartsService.deleteCartById(cid);
+            return res.json({message: "Cart delete successfully", deleteCart});
+        } catch (error) {
+            res.status(400).json({ message: error.message });
+        }
+    }
     updateProductCartController = async (req, res) => {
         try {
             const { cid, pid } = req.params;
